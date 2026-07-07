@@ -57,6 +57,11 @@
 		scroll-behavior: smooth;
 	}
 
+	/* Anchor jumps clear the fixed header */
+	section[id] {
+		scroll-margin-top: 6rem;
+	}
+
 	body {
 		@apply bg-background text-foreground font-sans antialiased;
 	}

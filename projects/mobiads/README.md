@@ -44,7 +44,9 @@ components/
   ui/
     dotted-surface.tsx  # 3D-волна из точек (R3F), фирменный градиент
     button.tsx          # shadcn-кнопка с брендовыми вариантами
-  sections/          # site-header, hero, marquee, services, cases, gaming, contact, site-footer
+    card-fan-carousel.tsx # анимированный fan-carousel кейсов (drag / стрелки / клавиши)
+  sections/          # site-header, hero, marquee, services, cases, showcase, gaming, contact, site-footer
+public/showcase/     # SVG-карточки кейсов (сгенерированы, легко заменить)
   brand.tsx          # логотип, ракета, спарк
   magnetic.tsx       # магнитный hover (respects reduced-motion)
   reveal.tsx         # scroll-reveal + stagger
@@ -77,6 +79,28 @@ self-hosted (без запроса к Google Fonts).
 ```
 
 Всё остальное подхватится автоматически.
+
+## Карусель кейсов (fan-carousel)
+
+Секция «Портфолио» использует `components/ui/card-fan-carousel.tsx` — веерную
+колоду карточек-кейсов: центральная карточка активна, соседние развёрнуты веером.
+Листается перетаскиванием центральной карточки, стрелками ←/→, точками-индикаторами
+и с клавиатуры (Tab на карусель → стрелки). Учитывает `prefers-reduced-motion`.
+
+Карточки заданы в `components/sections/showcase.tsx` как массив
+`{ imgUrl, alt }` — тот же интерфейс, что в исходном демо. Сейчас это
+бренд-градиентные SVG-истории (`public/showcase/*.svg`), сгенерированные в стиле
+брендбука. **Чтобы поставить свои изображения** (фото кейсов или, например,
+Unsplash-ссылки из демо) — просто замените `imgUrl`:
+
+```tsx
+const CASE_CARDS = [
+  { imgUrl: 'https://images.unsplash.com/photo-…', alt: '…' },
+  // или локально: { imgUrl: '/showcase/my-case.jpg', alt: '…' }
+];
+```
+
+Домен `images.unsplash.com` уже разрешён в `next.config.mjs` (для `next/image`).
 
 ## Что доработать под прод
 

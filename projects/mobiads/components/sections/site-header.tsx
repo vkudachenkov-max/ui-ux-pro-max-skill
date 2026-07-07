@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 const NAV = [
 	{ label: 'Услуги', href: '#services' },
 	{ label: 'Кейсы', href: '#cases' },
+	{ label: 'Портфолио', href: '#portfolio' },
 	{ label: 'Gaming', href: '#gaming' },
 	{ label: 'Контакты', href: '#contact' },
 ];
