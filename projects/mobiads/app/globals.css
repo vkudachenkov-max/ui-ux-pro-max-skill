@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		--radius: 1rem;
+
+		/* Type — Unbounded ≈ Druk Wide (wide, bold, full Cyrillic); Montserrat body.
+		   Self-hosted via @fontsource-variable. Swap --font-display for a
+		   self-hosted "Druk Wide Cy" @font-face to match the brandbook 1:1. */
+		--font-display: 'Unbounded Variable', system-ui, sans-serif;
+		--font-body: 'Montserrat Variable', system-ui, sans-serif;
+
+		/* Light — MobiAds Marketing (pale fog + deep purple ink) */
+		--background: 214 42% 91%; /* #DCE6F3 fog */
+		--foreground: 240 6% 8%; /* near-black ink */
+		--card: 0 0% 100%;
+		--card-foreground: 240 6% 8%;
+		--primary: 279 79% 36%; /* #691E9A brand purple */
+		--primary-foreground: 0 0% 100%;
+		--secondary: 287 89% 40%; /* #9A12AF magenta */
+		--secondary-foreground: 0 0% 100%;
+		--muted: 280 60% 96%; /* #F4E9FF mist */
+		--muted-foreground: 280 8% 38%;
+		--accent: 286 100% 71%; /* #DE6BFF violet */
+		--accent-foreground: 240 6% 8%;
+		--border: 275 30% 84%;
+		--input: 275 30% 84%;
+		--ring: 279 79% 46%;
+	}
+
+	.dark {
+		/* Dark — MobiAds Gaming (deep indigo, neon) */
+		--background: 244 60% 8%;
+		--foreground: 0 0% 100%;
+		--card: 243 46% 13%;
+		--card-foreground: 0 0% 100%;
+		--primary: 244 62% 46%; /* #342EBB indigo */
+		--primary-foreground: 0 0% 100%;
+		--secondary: 244 86% 64%; /* #5B54F2 */
+		--secondary-foreground: 0 0% 100%;
+		--muted: 244 40% 18%;
+		--muted-foreground: 240 20% 72%;
+		--accent: 313 97% 52%; /* #FB0CD2 hot pink */
+		--accent-foreground: 0 0% 100%;
+		--border: 244 40% 24%;
+		--input: 244 40% 24%;
+		--ring: 313 97% 60%;
+	}
+
+	* {
+		@apply border-border;
+	}
+
+	html {
+		scroll-behavior: smooth;
+	}
+
+	body {
+		@apply bg-background text-foreground font-sans antialiased;
+	}
+
+	::selection {
+		background: #9a12af;
+		color: #fff;
+	}
+}
+
+@layer components {
+	/* Ultra-wide industrial display headings (Druk Wide substitute).
+	   Archivo variable font stretched to its widest axis + heavy weight. */
+	.font-display {
+		font-family: var(--font-display), system-ui, sans-serif;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		line-height: 0.94;
+		text-transform: uppercase;
+	}
+
+	.display-1 {
+		@apply font-display;
+		font-size: clamp(1.35rem, 5.6vw, 4.25rem);
+	}
+	.display-2 {
+		@apply font-display;
+		font-size: clamp(1.4rem, 3.6vw, 2.9rem);
+	}
+	.eyebrow {
+		@apply font-display;
+		font-size: clamp(0.7rem, 1vw, 0.85rem);
+		letter-spacing: 0.18em;
+		font-weight: 700;
+	}
+
+	.text-grad {
+		background: linear-gradient(100deg, #691e9a, #9a12af 45%, #de6bff);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+	.text-grad-gaming {
+		background: linear-gradient(100deg, #6edbff, #5b6ff7 45%, #fb0cd2);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	/* Neumorphic pill — straight from the brandbook button style */
+	.pill-neu {
+		background: linear-gradient(145deg, #ffffff, #e7eef7);
+		box-shadow: 6px 6px 14px rgba(105, 30, 154, 0.14),
+			-6px -6px 14px rgba(255, 255, 255, 0.9);
+	}
+
+	.glass {
+		background: rgba(255, 255, 255, 0.62);
+		backdrop-filter: blur(16px);
+		-webkit-backdrop-filter: blur(16px);
+		border: 1px solid rgba(255, 255, 255, 0.7);
+	}
+	.glass-dark {
+		background: rgba(30, 24, 74, 0.42);
+		backdrop-filter: blur(16px);
+		-webkit-backdrop-filter: blur(16px);
+		border: 1px solid rgba(110, 161, 255, 0.18);
+	}
+
+	.neon-ring {
+		box-shadow: 0 0 0 1px rgba(110, 161, 255, 0.4),
+			0 0 30px rgba(91, 84, 242, 0.45), inset 0 0 24px rgba(251, 12, 210, 0.12);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+		scroll-behavior: auto !important;
+	}
+}
