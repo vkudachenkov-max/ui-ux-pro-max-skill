@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type FanCard = { imgUrl: string; alt: string };
+export type FanItem = { key: string; label: string; content: React.ReactNode };
 
 /**
  * Card fan carousel — a fanned deck of cards you can drag, click, or arrow
@@ -15,18 +15,19 @@ export type FanCard = { imgUrl: string; alt: string };
  * The nearest card is centred and upright; neighbours fan out with rotation,
  * lift, and scale. Only the centre card is draggable (outer element positions
  * the card, inner element owns the drag gesture — avoids transform conflicts).
+ * Each card's face is arbitrary React content (`items[].content`).
  */
 export default function CardFanCarousel({
-	cards,
+	items,
 	className,
 }: {
-	cards: FanCard[];
+	items: FanItem[];
 	className?: string;
 }) {
 	const [active, setActive] = React.useState(0);
 	const reduce = useReducedMotion();
-	const n = cards.length;
-	const VISIBLE = 3;
+	const n = items.length;
+	const VISIBLE = 2;
 
 	const go = React.useCallback(
 		(dir: number) => setActive((a) => (a + dir + n) % n),
@@ -61,23 +62,23 @@ export default function CardFanCarousel({
 						go(1);
 					}
 				}}
-				className="relative mx-auto flex h-[420px] w-full max-w-[680px] items-center justify-center rounded-3xl outline-none [perspective:1200px] focus-visible:ring-2 focus-visible:ring-brand-magenta focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:h-[520px]"
+				className="relative mx-auto flex h-[520px] w-full max-w-[880px] items-center justify-center rounded-3xl outline-none [perspective:1400px] focus-visible:ring-2 focus-visible:ring-brand-magenta focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:h-[600px]"
 			>
-				{cards.map((card, i) => {
+				{items.map((item, i) => {
 					const d = rel(i);
 					const hidden = Math.abs(d) > VISIBLE;
 					const isCenter = d === 0;
 					return (
-						<motion.figure
-							key={i}
-							className="absolute h-[340px] w-[210px] sm:h-[440px] sm:w-[270px]"
+						<motion.div
+							key={item.key}
+							className="absolute h-[430px] w-[290px] sm:h-[500px] sm:w-[330px]"
 							initial={false}
 							animate={{
-								x: `${d * 46}%`,
-								rotate: d * 7,
-								y: Math.abs(d) * 20,
-								scale: isCenter ? 1 : 1 - Math.abs(d) * 0.07,
-								opacity: hidden ? 0 : 1 - Math.abs(d) * 0.1,
+								x: `${d * 58}%`,
+								rotate: d * 6,
+								y: Math.abs(d) * 16,
+								scale: isCenter ? 1 : 1 - Math.abs(d) * 0.06,
+								opacity: hidden ? 0 : 1 - Math.abs(d) * 0.12,
 								zIndex: 30 - Math.abs(d),
 								pointerEvents: hidden ? 'none' : 'auto',
 							}}
@@ -87,10 +88,10 @@ export default function CardFanCarousel({
 						>
 							<motion.div
 								className={cn(
-									'h-full w-full overflow-hidden rounded-[1.75rem] border border-white/15 bg-brand-purple shadow-2xl',
+									'h-full w-full overflow-hidden rounded-[1.75rem] shadow-2xl',
 									isCenter
 										? 'cursor-grab shadow-brand-purple/40 active:cursor-grabbing'
-										: 'cursor-pointer brightness-[0.82]',
+										: 'cursor-pointer brightness-[0.85]',
 								)}
 								drag={isCenter ? 'x' : false}
 								dragElastic={0.14}
@@ -101,16 +102,9 @@ export default function CardFanCarousel({
 									else if (info.offset.x > 60 || info.velocity.x > 320) go(-1);
 								}}
 							>
-								{/* eslint-disable-next-line @next/next/no-img-element */}
-								<img
-									src={card.imgUrl}
-									alt={card.alt}
-									draggable={false}
-									loading="lazy"
-									className="pointer-events-none h-full w-full object-cover"
-								/>
+								{item.content}
 							</motion.div>
-						</motion.figure>
+						</motion.div>
 					);
 				})}
 			</div>
@@ -127,13 +121,13 @@ export default function CardFanCarousel({
 				</button>
 
 				<div className="flex items-center gap-2" role="tablist" aria-label="Выбор кейса">
-					{cards.map((c, i) => (
+					{items.map((item, i) => (
 						<button
-							key={i}
+							key={item.key}
 							type="button"
 							role="tab"
 							aria-selected={i === active}
-							aria-label={c.alt}
+							aria-label={item.label}
 							onClick={() => setActive(i)}
 							className={cn(
 								'h-2.5 rounded-full transition-all duration-300',

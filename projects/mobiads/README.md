@@ -87,20 +87,26 @@ self-hosted (без запроса к Google Fonts).
 Листается перетаскиванием центральной карточки, стрелками ←/→, точками-индикаторами
 и с клавиатуры (Tab на карусель → стрелки). Учитывает `prefers-reduced-motion`.
 
-Карточки заданы в `components/sections/showcase.tsx` как массив
-`{ imgUrl, alt }` — тот же интерфейс, что в исходном демо. Сейчас это
-бренд-градиентные SVG-истории (`public/showcase/*.svg`), сгенерированные в стиле
-брендбука. **Чтобы поставить свои изображения** (фото кейсов или, например,
-Unsplash-ссылки из демо) — просто замените `imgUrl`:
+Карточки заданы в `components/sections/showcase.tsx` — это **реальные кейсы**
+(Магнит Плюс, Много Лосося, ВкусВилл, Подружка + карточка «Награды»), собранные
+из структурированных данных в бренд-стиле (`CaseCardFace`). Компонент карусели
+универсальный — принимает `items: { key, label, content }[]`, где `content` —
+любой React-узел, поэтому добавить/изменить кейс = отредактировать массив
+`CASES` в `showcase.tsx`:
 
 ```tsx
-const CASE_CARDS = [
-  { imgUrl: 'https://images.unsplash.com/photo-…', alt: '…' },
-  // или локально: { imgUrl: '/showcase/my-case.jpg', alt: '…' }
+const CASES = [
+  {
+    brand: 'Название клиента', category: 'E-commerce',
+    title: 'Что делали', grad: 'linear-gradient(150deg,#691E9A,#9A12AF)',
+    primary: { value: '20.000+', label: 'продаж в месяц', sub: 'средний 5.336' },
+    metrics: [{ label: 'CR', value: '4,57%' }, { label: 'CAC', value: '800 ₽' }],
+  },
 ];
 ```
 
-Домен `images.unsplash.com` уже разрешён в `next.config.mjs` (для `next/image`).
+Если нужны фото/скриншоты приложений — можно рендерить внутри `content`
+`<img>`/`next/image` (домен `images.unsplash.com` уже разрешён в `next.config.mjs`).
 
 ## Что доработать под прод
 
