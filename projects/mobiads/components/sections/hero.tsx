@@ -6,6 +6,7 @@ import { DottedSurface } from '@/components/ui/dotted-surface';
 import { Button } from '@/components/ui/button';
 import { Magnetic } from '@/components/magnetic';
 import { Sparkle } from '@/components/brand';
+import { HeroRocket } from '@/components/hero-rocket';
 
 const STATS = [
 	{ v: '10 лет', l: 'на рынке mobile' },
@@ -59,6 +60,8 @@ export function Hero() {
 					animate="show"
 					className="mx-auto max-w-6xl text-center"
 				>
+					<HeroRocket className="relative mx-auto mb-3 w-[clamp(96px,11vw,150px)]" />
+
 					<motion.div
 						variants={line}
 						custom={0}
