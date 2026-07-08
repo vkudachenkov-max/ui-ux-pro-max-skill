@@ -6,7 +6,7 @@ import { DottedSurface } from '@/components/ui/dotted-surface';
 import { Button } from '@/components/ui/button';
 import { Magnetic } from '@/components/magnetic';
 import { Sparkle } from '@/components/brand';
-import { HeroRocket3D } from '@/components/hero-rocket-3d';
+import { HeroRocketMount } from '@/components/hero-rocket-mount';
 
 const STATS = [
 	{ v: '10 лет', l: 'на рынке mobile' },
@@ -60,7 +60,7 @@ export function Hero() {
 					animate="show"
 					className="mx-auto max-w-6xl text-center"
 				>
-					<HeroRocket3D className="relative mx-auto -mb-2 aspect-[4/5] w-[clamp(180px,20vw,300px)]" />
+					<HeroRocketMount />
 
 					<motion.div
 						variants={line}

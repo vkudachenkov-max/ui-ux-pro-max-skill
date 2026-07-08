@@ -110,19 +110,37 @@ export function DottedSurface({
 	variant = 'brand',
 	...props
 }: DottedSurfaceProps) {
+	// Only mount the WebGL canvas once WebGL2 is confirmed — otherwise render
+	// nothing (the section's CSS gradients remain), never crash the page.
+	const [ready, setReady] = React.useState(false);
+	React.useEffect(() => {
+		try {
+			setReady(
+				!!(
+					window.WebGL2RenderingContext &&
+					document.createElement('canvas').getContext('webgl2')
+				),
+			);
+		} catch {
+			setReady(false);
+		}
+	}, []);
+
 	return (
 		<div
 			className={cn('pointer-events-none absolute inset-0 -z-10', className)}
 			{...props}
 		>
-			<Canvas
-				dpr={[1, 2]}
-				camera={{ position: [0, 355, 1220], fov: 60, near: 1, far: 10000 }}
-				gl={{ alpha: true, antialias: true }}
-				frameloop="always"
-			>
-				<Waves variant={variant} />
-			</Canvas>
+			{ready && (
+				<Canvas
+					dpr={[1, 2]}
+					camera={{ position: [0, 355, 1220], fov: 60, near: 1, far: 10000 }}
+					gl={{ alpha: true, antialias: true }}
+					frameloop="always"
+				>
+					<Waves variant={variant} />
+				</Canvas>
+			)}
 		</div>
 	);
 }

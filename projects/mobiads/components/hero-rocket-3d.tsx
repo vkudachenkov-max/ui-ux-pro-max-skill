@@ -2,13 +2,7 @@
 
 import * as React from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import {
-	Environment,
-	Lightformer,
-	Float,
-	Sparkles,
-} from '@react-three/drei';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
+import { Environment, Lightformer, Float, Sparkles } from '@react-three/drei';
 import { useReducedMotion } from 'framer-motion';
 import * as THREE from 'three';
 import { cn } from '@/lib/utils';
@@ -21,6 +15,48 @@ const METAL = {
 	clearcoatRoughness: 0.16,
 	envMapIntensity: 1.35,
 } as const;
+
+/** Soft additive glow texture (fakes bloom without postprocessing). */
+function makeGlow(color: string) {
+	const c = document.createElement('canvas');
+	c.width = c.height = 128;
+	const ctx = c.getContext('2d')!;
+	const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+	g.addColorStop(0, color);
+	g.addColorStop(0.25, color);
+	g.addColorStop(1, 'rgba(0,0,0,0)');
+	ctx.fillStyle = g;
+	ctx.fillRect(0, 0, 128, 128);
+	const tex = new THREE.CanvasTexture(c);
+	tex.colorSpace = THREE.SRGBColorSpace;
+	return tex;
+}
+
+function Glow({
+	color,
+	position,
+	scale,
+	opacity = 1,
+}: {
+	color: string;
+	position: [number, number, number];
+	scale: number;
+	opacity?: number;
+}) {
+	const tex = React.useMemo(() => makeGlow(color), [color]);
+	return (
+		<sprite position={position} scale={[scale, scale, 1]}>
+			<spriteMaterial
+				map={tex}
+				blending={THREE.AdditiveBlending}
+				depthWrite={false}
+				transparent
+				opacity={opacity}
+				toneMapped={false}
+			/>
+		</sprite>
+	);
+}
 
 function Rocket({ reduce }: { reduce: boolean }) {
 	const spin = React.useRef<THREE.Group>(null!);
@@ -55,7 +91,7 @@ function Rocket({ reduce }: { reduce: boolean }) {
 	return (
 		<group ref={spin} position={[0, -0.05, 0]} scale={0.92}>
 			{/* Body */}
-			<mesh castShadow position={[0, 0, 0]}>
+			<mesh>
 				<cylinderGeometry args={[0.5, 0.58, 1.9, 64]} />
 				<meshPhysicalMaterial color="#6A1E9E" {...METAL} />
 			</mesh>
@@ -74,14 +110,15 @@ function Rocket({ reduce }: { reduce: boolean }) {
 				</mesh>
 			))}
 
-			{/* Porthole window (emissive cyan glass + chrome bezel) */}
+			{/* Porthole window (emissive cyan glass + chrome bezel + glow) */}
+			<Glow color="#8fecff" position={[0, 0.42, 0.62]} scale={0.9} opacity={0.9} />
 			<group position={[0, 0.42, 0.48]} rotation={[Math.PI / 2, 0, 0]}>
 				<mesh>
 					<cylinderGeometry args={[0.17, 0.17, 0.06, 48]} />
 					<meshStandardMaterial
 						color="#8DE9FF"
 						emissive="#4FD2FF"
-						emissiveIntensity={2.4}
+						emissiveIntensity={2.6}
 						toneMapped={false}
 					/>
 				</mesh>
@@ -111,14 +148,15 @@ function Rocket({ reduce }: { reduce: boolean }) {
 				/>
 			</mesh>
 
-			{/* Plasma exhaust */}
+			{/* Plasma exhaust + glow */}
+			<Glow color="#b0f0ff" position={[0, -1.7, 0]} scale={1.15} opacity={0.85} />
 			<group ref={flame} position={[0, -1.42, 0]}>
 				<mesh position={[0, -0.42, 0]} rotation={[Math.PI, 0, 0]}>
 					<coneGeometry args={[0.3, 1.0, 28, 1, true]} />
 					<meshBasicMaterial
 						color="#D46BFF"
 						transparent
-						opacity={0.55}
+						opacity={0.5}
 						toneMapped={false}
 						side={THREE.DoubleSide}
 						blending={THREE.AdditiveBlending}
@@ -128,7 +166,7 @@ function Rocket({ reduce }: { reduce: boolean }) {
 				<mesh position={[0, -0.3, 0]} rotation={[Math.PI, 0, 0]}>
 					<coneGeometry args={[0.17, 0.72, 24, 1, true]} />
 					<meshBasicMaterial
-						color="#B8F3FF"
+						color="#CFF6FF"
 						transparent
 						opacity={0.95}
 						toneMapped={false}
@@ -154,8 +192,17 @@ export function HeroRocket3D({ className }: { className?: string }) {
 
 	return (
 		<div className={cn('relative', className)}>
+			{/* Soft brand halo behind the rocket (CSS — always visible) */}
+			<div
+				aria-hidden
+				className="pointer-events-none absolute inset-0 -z-10 blur-2xl"
+				style={{
+					background:
+						'radial-gradient(45% 40% at 50% 42%, rgba(222,107,255,0.45), transparent 70%)',
+				}}
+			/>
 			<Canvas
-				dpr={[1, 1.6]}
+				dpr={[1, 1.8]}
 				gl={{ alpha: true, antialias: true }}
 				camera={{ position: [0, 0.1, 7.6], fov: 30 }}
 				frameloop={reduce ? 'demand' : 'always'}
@@ -194,16 +241,6 @@ export function HeroRocket3D({ className }: { className?: string }) {
 						<Lightformer form="ring" intensity={2} color="#5B54F2" position={[0, -2.5, 3]} scale={2.5} />
 					</Environment>
 				</React.Suspense>
-
-				<EffectComposer>
-					<Bloom
-						intensity={reduce ? 0.5 : 0.95}
-						luminanceThreshold={0.5}
-						luminanceSmoothing={0.25}
-						mipmapBlur
-						radius={0.7}
-					/>
-				</EffectComposer>
 			</Canvas>
 		</div>
 	);
