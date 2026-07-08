@@ -51,7 +51,7 @@ export function Hero() {
 			/>
 
 			<div className="container relative">
-				<div className="grid items-center gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-4">
+				<div className="grid items-center gap-4 lg:grid-cols-[1fr_1.15fr] lg:gap-2">
 					{/* ── Text column ── */}
 					<motion.div
 						initial="hidden"
@@ -130,7 +130,7 @@ export function Hero() {
 
 					{/* ── Rocket column ── */}
 					<div className="order-1 flex justify-center lg:order-2 lg:justify-end">
-						<BrandRocket className="aspect-square w-[clamp(230px,44vw,480px)]" />
+						<BrandRocket className="aspect-square w-[clamp(280px,56vw,640px)] lg:-my-10 lg:-mr-6 xl:-mr-14" />
 					</div>
 				</div>
 			</div>

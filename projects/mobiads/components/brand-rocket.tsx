@@ -1,26 +1,32 @@
 'use client';
 
 import * as React from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import {
+	motion,
+	useMotionValue,
+	useSpring,
+	useReducedMotion,
+} from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 /**
  * MobiAds brandbook rocket.
  *
  * Uses the real brand asset `/public/rocket.png` if present (transparent PNG,
- * already tilted), otherwise a faithful SVG recreation (pearlescent body, black
- * nose, pink fins with neon edges, orange plasma plume).
+ * already tilted), otherwise a faithful SVG recreation.
  *
  * → To use your exact render: upload it as `projects/mobiads/public/rocket.png`
  *   (transparent background). It swaps in automatically — no code change.
  *
- * Animated: launches in from below, floats, flame flickers. Respects
- * prefers-reduced-motion. Pass a square-ish sizing className (e.g. aspect-square).
+ * Animated: launches in, floats, flame flickers, trails smoke, and gently
+ * leans toward the cursor. Respects prefers-reduced-motion. Pass a square-ish
+ * sizing className (e.g. aspect-square w-[...]).
  */
 export function BrandRocket({ className }: { className?: string }) {
 	const reduce = useReducedMotion();
-	// Default to the SVG; swap to the real PNG only once it's confirmed present
-	// (avoids a broken-image icon when /rocket.png hasn't been uploaded yet).
+	const ref = React.useRef<HTMLDivElement>(null);
+
+	// Real PNG detection (default to SVG so there's never a broken image).
 	const [usePng, setUsePng] = React.useState(false);
 	React.useEffect(() => {
 		let alive = true;
@@ -35,11 +41,36 @@ export function BrandRocket({ className }: { className?: string }) {
 		};
 	}, []);
 
+	// Cursor parallax — the rocket leans toward the pointer.
+	const px = useMotionValue(0);
+	const py = useMotionValue(0);
+	const pr = useMotionValue(0);
+	const sx = useSpring(px, { stiffness: 90, damping: 18, mass: 0.6 });
+	const sy = useSpring(py, { stiffness: 90, damping: 18, mass: 0.6 });
+	const sr = useSpring(pr, { stiffness: 90, damping: 20, mass: 0.6 });
+
+	React.useEffect(() => {
+		if (reduce || !window.matchMedia('(hover: hover)').matches) return;
+		const onMove = (e: MouseEvent) => {
+			const el = ref.current;
+			if (!el) return;
+			const r = el.getBoundingClientRect();
+			const dx = (e.clientX - (r.left + r.width / 2)) / window.innerWidth;
+			const dy = (e.clientY - (r.top + r.height / 2)) / window.innerHeight;
+			px.set(dx * 46);
+			py.set(dy * 34);
+			pr.set(dx * 9);
+		};
+		window.addEventListener('mousemove', onMove);
+		return () => window.removeEventListener('mousemove', onMove);
+	}, [reduce, px, py, pr]);
+
 	return (
 		<motion.div
+			ref={ref}
 			className={cn('relative', className)}
-			initial={reduce ? false : { opacity: 0, x: -50, y: 110 }}
-			animate={{ opacity: 1, x: 0, y: 0 }}
+			initial={reduce ? false : { opacity: 0, y: 120 }}
+			animate={{ opacity: 1, y: 0 }}
 			transition={{ type: 'spring', stiffness: 46, damping: 15, delay: 0.1 }}
 		>
 			<div
@@ -51,28 +82,80 @@ export function BrandRocket({ className }: { className?: string }) {
 				}}
 			/>
 
+			{/* Smoke trail (emitted from the engine, drifts down-left) */}
+			{!reduce && <SmokeTrail />}
+
+			{/* Cursor parallax layer */}
 			<motion.div
-				className="absolute inset-0 flex items-center justify-center"
-				animate={reduce ? undefined : { y: [0, -18, 0], rotate: [-1.5, 1.5, -1.5] }}
-				transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
+				className="absolute inset-0"
+				style={{ x: sx, y: sy, rotate: sr }}
 			>
-				{usePng ? (
-					// eslint-disable-next-line @next/next/no-img-element
-					<img
-						src="/rocket.png"
-						alt="Ракета MobiAds"
-						className="h-full w-full select-none object-contain drop-shadow-[0_40px_60px_rgba(105,30,154,0.35)]"
-						draggable={false}
-						onError={() => setUsePng(false)}
-					/>
-				) : (
-					<RocketSvg
-						reduce={!!reduce}
-						className="h-[94%] w-auto rotate-[30deg] drop-shadow-[0_40px_60px_rgba(105,30,154,0.35)]"
-					/>
-				)}
+				{/* Float layer */}
+				<motion.div
+					className="absolute inset-0 flex items-center justify-center"
+					animate={
+						reduce ? undefined : { y: [0, -16, 0], rotate: [-1.4, 1.4, -1.4] }
+					}
+					transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
+				>
+					{usePng ? (
+						// eslint-disable-next-line @next/next/no-img-element
+						<img
+							src="/rocket.png"
+							alt="Ракета MobiAds"
+							className="h-full w-full select-none object-contain drop-shadow-[0_40px_60px_rgba(105,30,154,0.35)]"
+							draggable={false}
+							onError={() => setUsePng(false)}
+						/>
+					) : (
+						<RocketSvg
+							reduce={!!reduce}
+							className="h-[94%] w-auto rotate-[30deg] drop-shadow-[0_40px_60px_rgba(105,30,154,0.35)]"
+						/>
+					)}
+				</motion.div>
 			</motion.div>
 		</motion.div>
+	);
+}
+
+function SmokeTrail() {
+	const puffs = [0, 1, 2, 3, 4, 5];
+	const colors = ['216,170,240', '243,169,192', '198,190,214'];
+	return (
+		<div
+			aria-hidden
+			className="pointer-events-none absolute left-[47%] top-[66%] -z-10"
+		>
+			{puffs.map((i) => {
+				const size = 32 + i * 11;
+				return (
+					<motion.span
+						key={i}
+						className="absolute block rounded-full"
+						style={{
+							width: size,
+							height: size,
+							background: `radial-gradient(circle, rgba(${colors[i % 3]},0.72), rgba(${colors[i % 3]},0) 70%)`,
+							filter: 'blur(8px)',
+						}}
+						initial={{ x: 0, y: 0, opacity: 0, scale: 0.5 }}
+						animate={{
+							x: [0, -70 - i * 14, -130 - i * 18],
+							y: [0, 52 + i * 9, 100 + i * 15],
+							opacity: [0, 0.7, 0],
+							scale: [0.5, 1.3, 2],
+						}}
+						transition={{
+							duration: 2.4 + i * 0.2,
+							repeat: Infinity,
+							ease: 'easeOut',
+							delay: i * 0.34,
+						}}
+					/>
+				);
+			})}
+		</div>
 	);
 }
 
